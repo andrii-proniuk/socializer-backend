@@ -1,0 +1,8 @@
+services:
+  socializer-db:
+    image: mongo:8.0-rc
+    container_name: socializer-db
+    env_file:
+      - ./.env
+    volumes:
+      - ./db:/data/db
