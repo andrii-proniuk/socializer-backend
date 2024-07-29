@@ -1,11 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 
 const ROUNDS = 8;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, id: true })
 export class User {
+  id: string;
+
   @Prop()
   email: string;
 
@@ -19,8 +21,8 @@ export class User {
     return bcrypt.hash(plainPassword, ROUNDS);
   }
 
-  async compare(plainPassword: string) {
-    return bcrypt.compare(plainPassword, this.password);
+  static async validatePassword(user: User, plainPassword: string) {
+    return bcrypt.compare(plainPassword, user.password);
   }
 }
 

@@ -2,8 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { User } from './user.entity';
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, id: true })
 export class Profile {
+  id: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   user: User;
 
@@ -17,7 +19,7 @@ export class Profile {
   bio: string;
 
   @Prop()
-  birthday: Date;
+  dob: Date;
 
   createdAt: Date;
   updatedAt: Date;

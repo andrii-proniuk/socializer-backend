@@ -3,8 +3,10 @@ import { LocationPoint } from '../../common/schema-types/location-point.type';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from './user.entity';
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, id: true })
 export class Meet {
+  id: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   owner: User;
 

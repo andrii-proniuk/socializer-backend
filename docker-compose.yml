@@ -6,3 +6,4 @@ services:
       - ./.env
     volumes:
       - ./db:/data/db
+      - ./init-db-scripts:/docker-entrypoint-initdb.d

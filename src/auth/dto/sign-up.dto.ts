@@ -24,5 +24,5 @@ export class SignUpDto {
 
   @IsNotEmpty()
   @IsDateString()
-  birthday: string;
+  dob: string;
 }

@@ -1,12 +1,84 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import * as jwt from 'jwt-simple';
 import { UsersRepositoryService } from '../repositories/users/users-repository.service';
 import { SignUpDto } from './dto/sign-up.dto';
+import { plainToInstance } from 'class-transformer';
+import { SignUpResponseDto } from './response-dto/sign-up.response-dto';
+import { IJwtTokens } from './interfaces/jwt-tokens.interface';
+import { User } from '../repositories/entities/user.entity';
+import { ConfigService } from '@nestjs/config';
+import { JwtConfig } from '../config/configuration.types';
+import { SignInDto } from './dto/sign-in.dto';
+import { SignInResponseDto } from './response-dto/sign-in.response-dto';
+import { RefreshResponseDto } from './response-dto/refresh.response-dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private usersRepositoryService: UsersRepositoryService) {}
+  private jwtConfig: JwtConfig;
+
+  constructor(
+    configService: ConfigService,
+    private usersRepositoryService: UsersRepositoryService,
+  ) {
+    this.jwtConfig = configService.get<JwtConfig>('jwt');
+  }
+
+  private generateTokens({ id }: User): IJwtTokens {
+    const commonPayload = { id };
+    const accessPayload = {
+      ...commonPayload,
+      exp: Math.floor((Date.now() + this.jwtConfig.accessExpiration) / 1000),
+    };
+    const refreshPayload = {
+      ...commonPayload,
+      exp: Math.floor((Date.now() + this.jwtConfig.refreshExpiration) / 1000),
+    };
+
+    return {
+      accessToken: jwt.encode(accessPayload, this.jwtConfig.accessSecret),
+      refreshToken: jwt.encode(refreshPayload, this.jwtConfig.refreshSecret),
+    };
+  }
 
   async signUp(signUpDto: SignUpDto) {
-    return this.usersRepositoryService.create(signUpDto);
+    const user = await this.usersRepositoryService.create(signUpDto);
+
+    const jwtTokens = this.generateTokens(user);
+
+    return plainToInstance(SignUpResponseDto, { ...user, ...jwtTokens });
+  }
+
+  async signIn(signInDto: SignInDto): Promise<SignInResponseDto> {
+    const user = await this.usersRepositoryService.getByEmail(signInDto.email);
+
+    if (!user) {
+      throw new BadRequestException({
+        message: 'Invalid email or/and password',
+      });
+    }
+
+    const isValidPassword = await User.validatePassword(
+      user,
+      signInDto.password,
+    );
+
+    if (!isValidPassword) {
+      throw new BadRequestException({
+        message: 'Invalid email or/and password',
+      });
+    }
+
+    const tokens = this.generateTokens(user);
+
+    return plainToInstance(SignInResponseDto, {
+      ...user,
+      ...tokens,
+    });
+  }
+
+  async refresh(user: User): Promise<RefreshResponseDto> {
+    const tokens = this.generateTokens(user);
+
+    return plainToInstance(RefreshResponseDto, { ...user, ...tokens });
   }
 }

@@ -12,7 +12,7 @@ export class CreateUserUseCase {
     @InjectModel(Profile.name) private profileModel: Model<Profile>,
   ) {}
 
-  async exec({ email, password, name, birthday }: SignUpDto): Promise<User> {
+  async exec({ email, password, name, dob }: SignUpDto): Promise<User> {
     const user = await this.userModel.create({
       email,
       password: await User.hashPassword(password),
@@ -21,7 +21,7 @@ export class CreateUserUseCase {
     await this.profileModel.create({
       user,
       name,
-      birthday: new Date(birthday),
+      dob: new Date(dob),
     });
 
     return user;
