@@ -1,7 +1,13 @@
 import mongoose, { HydratedDocument } from 'mongoose';
-import { LocationPoint } from '../../common/schema-types/location-point.type';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from './user.entity';
+
+enum MeetStatusEnum {
+  Preparing = 'preparing',
+  Started = 'started',
+  Ended = 'ended',
+  Canceled = 'canceled',
+}
 
 @Schema({ timestamps: true, id: true })
 export class Meet {
@@ -10,14 +16,33 @@ export class Meet {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   owner: User;
 
-  @Prop({ type: LocationPoint, required: true })
-  location: object;
+  @Prop({
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: true,
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+    },
+  })
+  location: {
+    type: string;
+    coordinates: number[];
+  };
 
-  @Prop()
+  @Prop({ required: true })
+  startAt: Date;
+
+  @Prop({ required: true })
   name: string;
 
   @Prop()
   description: string;
+
+  @Prop({ type: String, enum: MeetStatusEnum })
+  status: string;
 
   createdAt: Date;
   updatedAt: Date;

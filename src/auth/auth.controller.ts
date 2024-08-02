@@ -9,8 +9,9 @@ import { RefreshGuard } from './guards/refresh.guard';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { User } from '../repositories/entities/user.entity';
 import { RefreshResponseDto } from './response-dto/refresh.response-dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

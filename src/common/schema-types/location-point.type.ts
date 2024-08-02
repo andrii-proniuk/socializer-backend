@@ -1,13 +1,12 @@
-import mongoose from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export const LocationPoint = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: ['Point'],
-    required: true,
-  },
-  coordinates: {
-    type: [Number],
-    required: true,
-  },
-});
+@Schema()
+export class LocationPoint {
+  @Prop({ required: true })
+  type: string;
+
+  @Prop({ type: [Number], required: true })
+  coordinates: number[];
+}
+
+export const LocationPointSchema = SchemaFactory.createForClass(LocationPoint);

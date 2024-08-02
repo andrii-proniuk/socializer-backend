@@ -2,13 +2,19 @@ import { Exclude, Expose } from 'class-transformer';
 import { ExposeObjectId } from '../../common/decorators/expose-object-id.decorator';
 
 @Exclude()
-export class SignUpResponseDto {
+export class GetMeetResponseDto {
   @ExposeObjectId()
   id: string;
 
   @Expose()
-  accessToken: string;
+  location: any;
 
   @Expose()
-  refreshToken: string;
+  name: string;
+
+  @Expose()
+  description?: string;
+
+  @Expose()
+  startDateTime: string;
 }
