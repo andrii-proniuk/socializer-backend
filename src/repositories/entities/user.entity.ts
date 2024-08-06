@@ -1,18 +1,22 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import { Profile } from './profile.entity';
 
 const ROUNDS = 8;
 
 @Schema({ timestamps: true, id: true })
 export class User {
   id: string;
+  _id: string;
 
   @Prop()
   email: string;
 
   @Prop()
   password: string;
+
+  profile: Profile;
 
   createdAt: Date;
   updatedAt: Date;

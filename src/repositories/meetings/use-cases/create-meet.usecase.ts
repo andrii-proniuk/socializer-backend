@@ -2,13 +2,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Meet } from '../../entities/meet.entity';
 import { Model } from 'mongoose';
 import { CreateMeetDto } from '../../../meets/dto/create-meet.dto';
-import { User } from '../../entities/user.entity';
+import { Profile } from '../../entities/profile.entity';
 
 export class CreateMeetUseCase {
   constructor(@InjectModel(Meet.name) private meetModel: Model<Meet>) {}
 
   async exec(
-    user: User,
+    profile: Profile,
     {
       name,
       description,
@@ -17,7 +17,7 @@ export class CreateMeetUseCase {
     }: CreateMeetDto,
   ): Promise<Meet> {
     const meet = await this.meetModel.create({
-      owner: user.id,
+      owner: profile.id,
       name,
       description,
       location: {
@@ -26,6 +26,8 @@ export class CreateMeetUseCase {
       },
       startAt: new Date(startDateTime),
     });
+
+    meet.owner = profile;
 
     return meet.toObject();
   }

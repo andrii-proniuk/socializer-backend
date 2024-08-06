@@ -1,6 +1,6 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { User } from './user.entity';
+import { Profile } from './profile.entity';
 
 enum MeetStatusEnum {
   Preparing = 'preparing',
@@ -12,9 +12,14 @@ enum MeetStatusEnum {
 @Schema({ timestamps: true, id: true })
 export class Meet {
   id: string;
+  _id: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-  owner: User;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Profile',
+    required: true,
+  })
+  owner: Profile;
 
   @Prop({
     type: {

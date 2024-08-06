@@ -5,6 +5,7 @@ import { User } from './user.entity';
 @Schema({ timestamps: true, id: true })
 export class Profile {
   id: string;
+  _id: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   user: User;
