@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { MeetMember, MeetMemberStatusEnum } from '../../entities/meet-member';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { MongooseDocument } from '../../../common/types/mongoose-document.type';
 
 @Injectable()
 export class UpdateMeetMemberStatusUseCase {
@@ -12,10 +13,10 @@ export class UpdateMeetMemberStatusUseCase {
   async exec(
     meetMember: MeetMember,
     status: MeetMemberStatusEnum,
-  ): Promise<MeetMember> {
+  ): Promise<MongooseDocument<MeetMember>> {
     await this.meetMemberModel.updateOne(
       {
-        _id: meetMember.id,
+        _id: meetMember._id,
       },
       {
         status,
@@ -23,9 +24,9 @@ export class UpdateMeetMemberStatusUseCase {
     );
 
     const updatedMeetMember = await this.meetMemberModel.findOne({
-      _id: meetMember.id,
+      _id: meetMember._id,
     });
 
-    return updatedMeetMember.toObject();
+    return updatedMeetMember;
   }
 }

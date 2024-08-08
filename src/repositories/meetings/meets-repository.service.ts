@@ -12,6 +12,8 @@ import { UpdateMeetMemberStatusUseCase } from './use-cases/update-meet-member-st
 import { Profile } from '../entities/profile.entity';
 import { GetMeetMemberUseCase } from './use-cases/get-meet-member.usecase';
 import { GetMeetMembersUseCase } from './use-cases/get-meet-members.usecase';
+import { MongooseDocument } from '../../common/types/mongoose-document.type';
+import { GetMeetMembersDto } from '../../meets/dto/get-meet-members.dto';
 
 @Injectable()
 export class MeetsRepositoryService {
@@ -26,38 +28,55 @@ export class MeetsRepositoryService {
     private getMeetMembersUseCase: GetMeetMembersUseCase,
   ) {}
 
-  async create(profile: Profile, createMeetDto: CreateMeetDto): Promise<Meet> {
+  async create(
+    profile: Profile,
+    createMeetDto: CreateMeetDto,
+  ): Promise<MongooseDocument<Meet>> {
     return this.createMeetUseCase.exec(profile, createMeetDto);
   }
 
-  async getNearby(getMeetsDto: GetMeetsDto) {
+  async getNearby(getMeetsDto: GetMeetsDto): Promise<MongooseDocument<Meet>[]> {
     return this.getNearbyMeetsUseCase.exec(getMeetsDto);
   }
 
-  async getByOwner(owner: Profile): Promise<Meet[]> {
+  async getByOwner(owner: Profile): Promise<MongooseDocument<Meet>[]> {
     return this.getMeetsByOwnerUseCase.exec(owner);
   }
 
-  async getById(id: string): Promise<Meet> {
+  async getById(id: string): Promise<MongooseDocument<Meet>> {
     return this.getMeetByIdUseCase.exec(id);
   }
 
-  async createMember(profile: Profile, meet: Meet): Promise<MeetMember> {
+  async createMember(
+    profile: Profile,
+    meet: Meet,
+  ): Promise<MongooseDocument<MeetMember>> {
     return this.createMeetMemberUseCase.exec(profile, meet);
   }
 
   async updateMember(
     meetMember: MeetMember,
     status: MeetMemberStatusEnum,
-  ): Promise<MeetMember> {
+  ): Promise<MongooseDocument<MeetMember>> {
     return this.updateMeetMemberStatusUseCase.exec(meetMember, status);
   }
 
-  async getMeetMember(meetId: string, profileId: string): Promise<MeetMember> {
+  async getMeetMember(
+    meetId: string,
+    profileId: string,
+  ): Promise<MongooseDocument<MeetMember>> {
     return this.getMeetMemberUseCase.exec(meetId, profileId);
   }
 
-  async getMeetMembers(meetId: string): Promise<MeetMember[]> {
-    return this.getMeetMembersUseCase.exec(meetId);
+  async getMeetMembers(
+    meetId: string,
+    getMeetMembersDto: GetMeetMembersDto,
+    isMeetOwner?: boolean,
+  ): Promise<MongooseDocument<MeetMember>[]> {
+    return this.getMeetMembersUseCase.exec(
+      meetId,
+      getMeetMembersDto,
+      isMeetOwner,
+    );
   }
 }

@@ -12,17 +12,25 @@ import { MeetsService } from './meets.service';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { User } from '../repositories/entities/user.entity';
 import { CreateMeetDto } from './dto/create-meet.dto';
-import { CreateMeetResponseDto } from './response-dto/create-meet.response-dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { GetMeetResponseDto } from './response-dto/get-meets.response-dto';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { GetMeetsDto } from './dto/get-meets.dto';
 import { Locals } from '../common/decorators/locals.decorator';
-import { MeetMember } from '../repositories/entities/meet-member';
+import {
+  MeetMember,
+  MeetMemberStatusEnum,
+} from '../repositories/entities/meet-member';
 import { Meet } from '../repositories/entities/meet.entity';
-import { GetMeetMemberResponseDto } from './response-dto/get-meet-member.response-dto';
 import { MeetMemberExistsGuard } from './guards/meet-member-exists.guard';
 import { MeetExistsGuard } from './guards/meet-exists.guard';
+import { ProfileCanGetMembersGuard } from './guards/profile-can-get-members.guard';
+import { MeetOwnerGuard } from './guards/meet-owner.guard';
+import { MeetNotStartedGuard } from './guards/meet-not-started.guard';
+import { CheckMeetMemberStatus } from './decorators/check-meet-member-status.decorator';
+import { MeetMemberNotOwnerGuard } from './guards/meet-member-not-owner.guard';
+import { MeetMemberStatusGuard } from './guards/meet-member-status.guard';
+import { ProfileCanJoinMeetGuard } from './guards/profile-can-join-meet.guard';
+import { GetMeetMembersDto } from './dto/get-meet-members.dto';
 
 @ApiTags('meets')
 @ApiBearerAuth('default')
@@ -31,71 +39,93 @@ import { MeetExistsGuard } from './guards/meet-exists.guard';
 export class MeetsController {
   constructor(private meetsService: MeetsService) {}
 
-  // TODO: add date/time validation guard
   @Post()
-  async create(
-    @GetUser() user: User,
-    @Body() createMeetDto: CreateMeetDto,
-  ): Promise<CreateMeetResponseDto> {
-    console.log({ createMeetDto });
+  async create(@GetUser() user: User, @Body() createMeetDto: CreateMeetDto) {
     return this.meetsService.create(user.profile, createMeetDto);
   }
 
   @Get()
-  async getNearby(
-    @Query() getMeetsDto: GetMeetsDto,
-  ): Promise<GetMeetResponseDto[]> {
+  async getNearby(@Query() getMeetsDto: GetMeetsDto) {
     return this.meetsService.getNearby(getMeetsDto);
   }
 
   @Get(':id')
+  @ApiParam({ name: 'id', type: 'string' })
   @UseGuards(MeetExistsGuard)
   async getById(@Param('id') id: string) {
     return this.meetsService.getById(id);
   }
 
-  @Post(':id/request')
-  async createMember(@GetUser() user: User, @Locals('meet') meet: Meet) {
-    return this.meetsService.createMember(user.profile, meet);
+  @Post(':id/join')
+  @ApiParam({ name: 'id', type: 'string' })
+  @UseGuards(MeetExistsGuard, MeetNotStartedGuard, ProfileCanJoinMeetGuard)
+  async joinMeet(@GetUser() { profile }: User, @Locals('meet') meet: Meet) {
+    return this.meetsService.joinMeet(profile, meet);
   }
 
   @Patch(':id/member/:profileId/accept')
-  @UseGuards(MeetMemberExistsGuard)
-  async acceptMember(
-    @Locals('meetMember') meetMember: MeetMember,
-  ): Promise<GetMeetMemberResponseDto> {
+  @ApiParam({ name: 'profileId', type: 'string' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @CheckMeetMemberStatus(MeetMemberStatusEnum.Pending)
+  @UseGuards(
+    MeetMemberExistsGuard,
+    MeetOwnerGuard,
+    MeetMemberStatusGuard,
+    MeetNotStartedGuard,
+  )
+  async acceptMember(@Locals('meetMember') meetMember: MeetMember) {
     return this.meetsService.acceptMember(meetMember);
   }
 
   @Patch(':id/member/:profileId/reject')
-  @UseGuards(MeetMemberExistsGuard)
-  async rejectMember(
-    @Locals('meetMember') meetMember: MeetMember,
-  ): Promise<GetMeetMemberResponseDto> {
+  @ApiParam({ name: 'profileId', type: 'string' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @CheckMeetMemberStatus(MeetMemberStatusEnum.Pending)
+  @UseGuards(
+    MeetMemberExistsGuard,
+    MeetOwnerGuard,
+    MeetMemberStatusGuard,
+    MeetNotStartedGuard,
+  )
+  async rejectMember(@Locals('meetMember') meetMember: MeetMember) {
     return this.meetsService.rejectMember(meetMember);
   }
 
   @Patch(':id/member/:profileId/kick')
-  @UseGuards(MeetMemberExistsGuard)
-  async kickMember(
-    @Locals('meetMember') meetMember: MeetMember,
-  ): Promise<GetMeetMemberResponseDto> {
+  @ApiParam({ name: 'profileId', type: 'string' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @CheckMeetMemberStatus(MeetMemberStatusEnum.Accepted)
+  @UseGuards(
+    MeetMemberExistsGuard,
+    MeetOwnerGuard,
+    MeetMemberStatusGuard,
+    MeetNotStartedGuard,
+  )
+  async kickMember(@Locals('meetMember') meetMember: MeetMember) {
     return this.meetsService.kickMember(meetMember);
   }
 
   @Patch(':id/leave')
-  @UseGuards(MeetMemberExistsGuard)
-  async leaveMeet(
-    @Locals('meetMember') meetMember: MeetMember,
-  ): Promise<GetMeetMemberResponseDto> {
+  @ApiParam({ name: 'id', type: 'string' })
+  @CheckMeetMemberStatus(MeetMemberStatusEnum.Accepted)
+  @UseGuards(
+    MeetMemberExistsGuard,
+    MeetMemberNotOwnerGuard,
+    MeetMemberStatusGuard,
+    MeetNotStartedGuard,
+  )
+  async leaveMeet(@Locals('meetMember') meetMember: MeetMember) {
     return this.meetsService.leaveMeet(meetMember);
   }
 
   @Get(':id/members')
-  @UseGuards()
+  @ApiParam({ name: 'id', type: 'string' })
+  @UseGuards(MeetExistsGuard, ProfileCanGetMembersGuard)
   async getMembers(
-    @Param('id') meetId: string,
-  ): Promise<GetMeetMemberResponseDto[]> {
-    return this.meetsService.getMembers(meetId);
+    @Locals('meet') meet: Meet,
+    @GetUser() { profile }: User,
+    @Query() getMeetMembersDto: GetMeetMembersDto,
+  ) {
+    return this.meetsService.getMembers(profile, meet, getMeetMembersDto);
   }
 }

@@ -2,6 +2,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Meet } from '../../entities/meet.entity';
 import { FilterQuery, Model } from 'mongoose';
 import { GetMeetsDto } from '../../../meets/dto/get-meets.dto';
+import { MongooseDocument } from '../../../common/types/mongoose-document.type';
 
 export class GetNearbyMeetsUseCase {
   constructor(@InjectModel(Meet.name) private meetModel: Model<Meet>) {}
@@ -13,13 +14,20 @@ export class GetNearbyMeetsUseCase {
     radius,
   }: GetMeetsDto): FilterQuery<Meet> {
     const filterQuery: FilterQuery<Meet> = {
-      owner,
+      startAt: {
+        $gt: new Date(),
+      },
     };
+
+    if (owner) {
+      filterQuery.owner = owner;
+    }
 
     if (!!longitude && !!latitude && !!radius) {
       filterQuery.location = {
-        $geoWithin: {
-          $centerSphere: [[longitude, latitude], radius / 6371000],
+        $near: {
+          $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+          $maxDistance: radius,
         },
       };
     }
@@ -27,11 +35,15 @@ export class GetNearbyMeetsUseCase {
     return filterQuery;
   }
 
-  async exec(getMeetsDto: GetMeetsDto) {
-    const meets = await this.meetModel.find(
-      this.composeFindOptions(getMeetsDto),
-    );
+  async exec(getMeetsDto: GetMeetsDto): Promise<MongooseDocument<Meet>[]> {
+    const meets = await this.meetModel
+      .find(
+        this.composeFindOptions(getMeetsDto),
+        undefined,
+        getMeetsDto.getPaginationOptions(),
+      )
+      .populate('owner');
 
-    return meets.map((meet) => meet.toObject());
+    return meets;
   }
 }

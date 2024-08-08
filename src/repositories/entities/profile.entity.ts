@@ -1,25 +1,21 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { User } from './user.entity';
 
 @Schema({ timestamps: true, id: true })
 export class Profile {
   id: string;
-  _id: string;
+  _id: mongoose.Types.ObjectId;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-  user: User;
+  @Prop({ type: String })
+  avatar: string;
 
-  @Prop({ type: [String] })
-  photos: string[];
-
-  @Prop()
+  @Prop({ type: String, required: true })
   name: string;
 
   @Prop()
   bio: string;
 
-  @Prop()
+  @Prop({ type: Date, required: true })
   dob: Date;
 
   createdAt: Date;

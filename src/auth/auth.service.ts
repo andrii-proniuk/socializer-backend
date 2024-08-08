@@ -11,6 +11,11 @@ import { JwtConfig } from '../config/configuration.types';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignInResponseDto } from './response-dto/sign-in.response-dto';
 import { RefreshResponseDto } from './response-dto/refresh.response-dto';
+import {
+  SuccessResponseDto,
+  SuccessResponseDtoParams,
+} from '../common/response-dto/success.response-dto';
+import { MongooseDocument } from '../common/types/mongoose-document.type';
 
 @Injectable()
 export class AuthService {
@@ -43,12 +48,19 @@ export class AuthService {
   async signUp(signUpDto: SignUpDto) {
     const user = await this.usersRepositoryService.create(signUpDto);
 
-    const jwtTokens = this.generateTokens(user);
+    const tokens = this.generateTokens(user);
 
-    return plainToInstance(SignUpResponseDto, { ...user, ...jwtTokens });
+    return plainToInstance<
+      SuccessResponseDto<SignUpResponseDto>,
+      SuccessResponseDtoParams
+    >(SuccessResponseDto<SignUpResponseDto>, {
+      type: SignUpResponseDto,
+      data: user,
+      additionalData: tokens,
+    });
   }
 
-  async signIn(signInDto: SignInDto): Promise<SignInResponseDto> {
+  async signIn(signInDto: SignInDto) {
     const user = await this.usersRepositoryService.getByEmail(signInDto.email);
 
     if (!user) {
@@ -70,15 +82,26 @@ export class AuthService {
 
     const tokens = this.generateTokens(user);
 
-    return plainToInstance(SignInResponseDto, {
-      ...user,
-      ...tokens,
+    return plainToInstance<
+      SuccessResponseDto<SignInResponseDto>,
+      SuccessResponseDtoParams
+    >(SuccessResponseDto<SignInResponseDto>, {
+      type: SignInResponseDto,
+      data: user,
+      additionalData: tokens,
     });
   }
 
-  async refresh(user: User): Promise<RefreshResponseDto> {
+  async refresh(user: MongooseDocument<User>) {
     const tokens = this.generateTokens(user);
 
-    return plainToInstance(RefreshResponseDto, { ...user, ...tokens });
+    return plainToInstance<
+      SuccessResponseDto<RefreshResponseDto>,
+      SuccessResponseDtoParams
+    >(SuccessResponseDto<RefreshResponseDto>, {
+      type: RefreshResponseDto,
+      data: user,
+      additionalData: tokens,
+    });
   }
 }

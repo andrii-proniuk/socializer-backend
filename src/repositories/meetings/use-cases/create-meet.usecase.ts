@@ -3,9 +3,14 @@ import { Meet } from '../../entities/meet.entity';
 import { Model } from 'mongoose';
 import { CreateMeetDto } from '../../../meets/dto/create-meet.dto';
 import { Profile } from '../../entities/profile.entity';
+import { MeetMember, MeetMemberStatusEnum } from '../../entities/meet-member';
+import { MongooseDocument } from '../../../common/types/mongoose-document.type';
 
 export class CreateMeetUseCase {
-  constructor(@InjectModel(Meet.name) private meetModel: Model<Meet>) {}
+  constructor(
+    @InjectModel(Meet.name) private meetModel: Model<Meet>,
+    @InjectModel(MeetMember.name) private meetMember: Model<MeetMember>,
+  ) {}
 
   async exec(
     profile: Profile,
@@ -15,9 +20,9 @@ export class CreateMeetUseCase {
       location: { longitude, latitude },
       startAt: startDateTime,
     }: CreateMeetDto,
-  ): Promise<Meet> {
+  ): Promise<MongooseDocument<Meet>> {
     const meet = await this.meetModel.create({
-      owner: profile.id,
+      owner: profile,
       name,
       description,
       location: {
@@ -29,6 +34,12 @@ export class CreateMeetUseCase {
 
     meet.owner = profile;
 
-    return meet.toObject();
+    await this.meetMember.create({
+      meet,
+      profile,
+      status: MeetMemberStatusEnum.Accepted,
+    });
+
+    return meet;
   }
 }

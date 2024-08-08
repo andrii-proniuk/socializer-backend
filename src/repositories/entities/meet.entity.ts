@@ -2,12 +2,12 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Profile } from './profile.entity';
 
-enum MeetStatusEnum {
-  Preparing = 'preparing',
-  Started = 'started',
-  Ended = 'ended',
-  Canceled = 'canceled',
-}
+// enum MeetStatusEnum {
+//   Preparing = 'preparing',
+//   Started = 'started',
+//   Ended = 'ended',
+//   Canceled = 'canceled',
+// }
 
 @Schema({ timestamps: true, id: true })
 export class Meet {
@@ -37,7 +37,7 @@ export class Meet {
     coordinates: number[];
   };
 
-  @Prop({ required: true })
+  @Prop({ type: Date, required: true })
   startAt: Date;
 
   @Prop({ required: true })
@@ -46,8 +46,8 @@ export class Meet {
   @Prop()
   description: string;
 
-  @Prop({ type: String, enum: MeetStatusEnum })
-  status: string;
+  // @Prop({ type: String, enum: MeetStatusEnum })
+  // status: string;
 
   createdAt: Date;
   updatedAt: Date;

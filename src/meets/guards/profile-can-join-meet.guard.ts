@@ -9,7 +9,7 @@ import { InnerRequest } from '../../common/interfaces/inner-request.interface';
 import { MeetMemberStatusEnum } from '../../repositories/entities/meet-member';
 
 @Injectable()
-export class ProfileCanGetMembersGuard implements CanActivate {
+export class ProfileCanJoinMeetGuard implements CanActivate {
   constructor(private meetsRepositoryService: MeetsRepositoryService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -17,16 +17,12 @@ export class ProfileCanGetMembersGuard implements CanActivate {
 
     const { meet } = req.locals;
 
-    if (meet.owner._id.equals(req.user.profile._id)) {
-      return true;
-    }
-
     const meetMember = await this.meetsRepositoryService.getMeetMember(
-      meet._id,
+      meet.id,
       req.user.profile.id,
     );
 
-    if (!meetMember || meetMember.status !== MeetMemberStatusEnum.Accepted) {
+    if (meetMember && meetMember.status !== MeetMemberStatusEnum.Left) {
       throw new ForbiddenException();
     }
 

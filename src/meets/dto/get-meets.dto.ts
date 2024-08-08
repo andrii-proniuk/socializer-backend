@@ -8,8 +8,9 @@ import {
   IsString,
   ValidateIf,
 } from 'class-validator';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
-export class GetMeetsDto {
+export class GetMeetsDto extends PaginationDto {
   @IsOptional()
   @Type(() => Number)
   @IsLongitude()
@@ -17,7 +18,7 @@ export class GetMeetsDto {
     (object) =>
       isNumberString(object.latitude) || isNumberString(object.radius),
   )
-  longitude: number;
+  longitude?: number;
 
   @IsOptional()
   @Type(() => Number)
@@ -26,7 +27,7 @@ export class GetMeetsDto {
     (object) =>
       isNumberString(object.radius) || isNumberString(object.longitude),
   )
-  latitude: number;
+  latitude?: number;
 
   @IsOptional()
   @Type(() => Number)
@@ -35,9 +36,9 @@ export class GetMeetsDto {
     (object) =>
       isNumberString(object.latitude) || isNumberString(object.longitude),
   )
-  radius: number;
+  radius?: number;
 
   @IsOptional()
   @IsString()
-  owner: string;
+  owner?: string;
 }

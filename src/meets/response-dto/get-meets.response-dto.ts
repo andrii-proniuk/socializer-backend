@@ -14,6 +14,15 @@ class ProfileResponseDto {
 }
 
 @Exclude()
+class LocationDto {
+  @Expose()
+  type: string;
+
+  @Expose()
+  coordinates: number[];
+}
+
+@Exclude()
 export class GetMeetResponseDto {
   @ExposeObjectId()
   id: string;
@@ -23,7 +32,8 @@ export class GetMeetResponseDto {
   owner: ProfileResponseDto;
 
   @Expose()
-  location: any;
+  @Type(() => LocationDto)
+  location: LocationDto;
 
   @Expose()
   name: string;

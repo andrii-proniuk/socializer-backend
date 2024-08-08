@@ -15,7 +15,7 @@ export class MeetMemberExistsGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<InnerRequest>();
 
     const { id } = req.params;
-    const profileId = req.params.profileId || req.user.profile._id;
+    const profileId = req.params.profileId || req.user.profile.id;
 
     const meetMember = await this.meetsRepositoryService.getMeetMember(
       id,
