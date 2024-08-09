@@ -4,10 +4,12 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  Validate,
   ValidateNested,
 } from 'class-validator';
 import { LocationDto } from './location.dto';
 import { Type } from 'class-transformer';
+import { MeetStartAtValidator } from '../validators/meet-start-at.validator';
 
 export class CreateMeetDto {
   @IsNotEmpty()
@@ -25,6 +27,7 @@ export class CreateMeetDto {
   location: LocationDto;
 
   @IsNotEmpty()
+  @Validate(MeetStartAtValidator)
   @IsDateString()
   startAt: string;
 }

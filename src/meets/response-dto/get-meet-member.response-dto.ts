@@ -1,5 +1,6 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ExposeObjectId } from '../../common/decorators/expose-object-id.decorator';
+import { ExposeObjectIdFromEntity } from '../../common/decorators/expose-object-id-from-entity.decorator';
 
 @Exclude()
 class ProfileResponseDto {
@@ -14,33 +15,17 @@ class ProfileResponseDto {
 }
 
 @Exclude()
-class LocationDto {
-  @Expose()
-  type: string;
-
-  @Expose()
-  coordinates: number[];
-}
-
-@Exclude()
-export class GetMeetResponseDto {
+export class GetMeetMemberResponseDto {
   @ExposeObjectId()
   id: string;
 
   @Expose()
   @Type(() => ProfileResponseDto)
-  owner: ProfileResponseDto;
+  profile: ProfileResponseDto;
+
+  @ExposeObjectIdFromEntity('meet')
+  meetId: string;
 
   @Expose()
-  @Type(() => LocationDto)
-  location: LocationDto;
-
-  @Expose()
-  name: string;
-
-  @Expose()
-  description?: string;
-
-  @Expose()
-  startAt: string;
+  status: string;
 }

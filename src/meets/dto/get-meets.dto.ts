@@ -1,19 +1,44 @@
 import { Type } from 'class-transformer';
-import { IsLatitude, IsLongitude, IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsLatitude,
+  IsLongitude,
+  IsNumber,
+  isNumberString,
+  IsOptional,
+  IsString,
+  ValidateIf,
+} from 'class-validator';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
-export class GetMeetsDto {
-  @IsNotEmpty()
+export class GetMeetsDto extends PaginationDto {
+  @IsOptional()
   @Type(() => Number)
   @IsLongitude()
-  longitude: number;
+  @ValidateIf(
+    (object) =>
+      isNumberString(object.latitude) || isNumberString(object.radius),
+  )
+  longitude?: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Number)
   @IsLatitude()
-  latitude: number;
+  @ValidateIf(
+    (object) =>
+      isNumberString(object.radius) || isNumberString(object.longitude),
+  )
+  latitude?: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  radius: number;
+  @ValidateIf(
+    (object) =>
+      isNumberString(object.latitude) || isNumberString(object.longitude),
+  )
+  radius?: number;
+
+  @IsOptional()
+  @IsString()
+  owner?: string;
 }
